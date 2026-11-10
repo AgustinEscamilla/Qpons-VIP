@@ -125,7 +125,7 @@ Los controladores definen las rutas HTTP. Los servicios contienen las reglas de 
 
 `POST /api/auth/register` crea la cuenta pendiente y solicita un codigo de seis digitos. El backend almacena un hash del codigo, aplica expiracion, limite de intentos y espera para reenvio. `POST /api/auth/verify-registration` compara el codigo y activa la cuenta. En registro de negocio crea la empresa con estado pendiente de aprobacion. `POST /api/auth/login` comprueba la contrasena y devuelve un JWT. Las rutas privadas leen `Authorization: Bearer <token>`.
 
-En desarrollo local, `OTP_DEV_MODE=true` permite mostrar el codigo de desarrollo segun la configuracion del backend. Para enviar correos reales se configuran `RESEND_API_KEY` y `OTP_FROM_EMAIL`. No habilites el modo de desarrollo en produccion.
+En desarrollo local, `OTP_DEV_MODE=true` permite mostrar el codigo de desarrollo. Para una demo temporal en produccion, `OTP_TEST_MODE=true` y `OTP_TEST_EMAILS` permiten mostrar el codigo solo a las direcciones autorizadas, separadas por comas. Desactiva el modo de prueba al terminar. Para enviar correos reales se configuran `RESEND_API_KEY` y `OTP_FROM_EMAIL`.
 
 ### Rutas principales
 
@@ -209,6 +209,7 @@ Backend, en `backend/.env` (copia `backend/.env.example`):
 - `DB_SYNCHRONIZE`: sincronizacion de esquema solo para desarrollo.
 - `JWT_SECRET`: secreto aleatorio largo para firmar sesiones.
 - `OTP_DEV_MODE`: muestra codigo de desarrollo solo localmente.
+- `OTP_TEST_MODE`, `OTP_TEST_EMAILS`: habilitan temporalmente codigos visibles para correos autorizados en una demo.
 - `RESEND_API_KEY`, `OTP_FROM_EMAIL`: entrega de codigo por correo.
 
 Los archivos `.env` no se deben subir a Git. Nunca pongas claves, contrasenas, tokens ni codigos reales en el manual, comentarios, capturas o commits. Restringe las claves de Google Maps por API y origen permitido.

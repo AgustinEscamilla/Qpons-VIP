@@ -273,11 +273,20 @@ export class AuthService {
   private async deliverRegistrationCode(email: string, code: string): Promise<{ developmentCode?: string }> {
     const apiKey = this.config.get<string>('RESEND_API_KEY');
     const from = this.config.get<string>('OTP_FROM_EMAIL');
+    // El modo de prueba en producción solo revela códigos para correos autorizados explícitamente.
+    const testModeEnabled = this.config.get<string>('OTP_TEST_MODE') === 'true';
+    const testEmails = (this.config.get<string>('OTP_TEST_EMAILS') || '')
+      .split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean);
+    if (testModeEnabled && testEmails.includes(email.toLowerCase())) {
+      return { developmentCode: code };
+    }
     if (!apiKey) {
       const localOtpEnabled = this.config.get<string>('OTP_DEV_MODE') === 'true'
         && this.config.get<string>('NODE_ENV') !== 'production';
       if (localOtpEnabled) return { developmentCode: code };
-      throw new ServiceUnavailableException('El envio de correo no esta configurado; configura Resend o activa OTP_DEV_MODE solo en desarrollo');
+      throw new ServiceUnavailableException('El envio de correo no esta configurado; habilita el modo de prueba para un correo autorizado o configura Resend');
     }
     if (!from) throw new ServiceUnavailableException('Configura OTP_FROM_EMAIL para enviar codigos');
     const response = await fetch('https://api.resend.com/emails', {

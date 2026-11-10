@@ -151,7 +151,7 @@ export function DesktopMemberGate({ visible, onClose, onAuthenticated }) {
                 <Text style={{ color: C.muted, fontSize: 12, lineHeight: 19 }}>Escribe el codigo de 6 digitos que enviamos a {pendingRegistration?.email}.</Text>
                 {accountType === 'business' ? <View style={{ backgroundColor: C.pale, padding: 12, borderRadius: 14, marginTop: 10 }}><Text style={{ color: C.navy, fontWeight: '700', fontSize: 12 }}>Solicitud para: {pendingRegistration?.name}</Text><Text style={{ color: C.muted, fontSize: 10, marginTop: 5 }}>{pendingRegistration?.businessDescription}</Text><Text style={{ color: C.pink, fontSize: 10, marginTop: 6 }}>Quedara pendiente de aprobacion despues de verificar el correo.</Text></View> : null}
                 <Field label="Codigo de verificacion" value={verificationCode} onChangeText={(value) => { setVerificationCode(value.replace(/\D/g, '').slice(0, 6)); setErrors({}); }} error={errors.code} placeholder="000000" keyboardType="number-pad" maxLength={6} autoComplete="one-time-code" />
-                {developmentCode ? <Text style={{ color: C.pink, fontSize: 12, marginTop: 8 }}>Codigo de prueba local: {developmentCode}</Text> : null}
+                {developmentCode ? <Text style={{ color: C.pink, fontSize: 12, marginTop: 8 }}>Codigo de prueba: {developmentCode}</Text> : null}
                 <Pressable onPress={resendCode} accessibilityRole="button" disabled={submitting} style={{ paddingVertical: 11 }}><Text style={{ color: C.navy, fontSize: 12, textAlign: 'center', fontWeight: '700' }}>Reenviar codigo</Text></Pressable>
               </>}
               {errors.form ? <Text accessibilityRole="alert" style={{ color: C.pink, fontSize: 12, marginTop: 12 }}>{errors.form}</Text> : null}

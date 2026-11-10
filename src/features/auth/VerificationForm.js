@@ -46,7 +46,7 @@ export function VerificationForm({ registration, onBack, onVerify, onResend }) {
         <Text style={{ color: C.pink, fontSize: 10, lineHeight: 15, marginTop: 7 }}>La empresa quedara pendiente de aprobacion despues de verificar el correo.</Text>
       </View> : null}
       <Field label="Codigo de verificacion" value={code} onChangeText={(value) => { setCode(value.replace(/\D/g, '').slice(0, 6)); setError(''); }} error={error && /^Escribe/.test(error) ? error : ''} placeholder="000000" keyboardType="number-pad" maxLength={6} autoComplete="one-time-code" />
-      {developmentCode ? <Text accessibilityRole="alert" style={{ color: C.pink, marginTop: 10, fontSize: 12, fontWeight: '700' }}>Codigo de prueba local: {developmentCode}</Text> : null}
+      {developmentCode ? <Text accessibilityRole="alert" style={{ color: C.pink, marginTop: 10, fontSize: 12, fontWeight: '700' }}>Codigo de prueba: {developmentCode}</Text> : null}
       {message ? <Text accessibilityLiveRegion="polite" style={{ color: C.green, marginTop: 10, fontSize: 11 }}>{message}</Text> : null}
       {error && !/^Escribe/.test(error) ? <Text accessibilityRole="alert" style={{ color: C.pink, marginTop: 12, fontSize: 12 }}>{error}</Text> : null}
       <Button onPress={submit}>{submitting ? 'Verificando...' : 'Confirmar correo y crear cuenta'}</Button>
