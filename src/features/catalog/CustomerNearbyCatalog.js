@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { Card, Header, Label } from '../../shared/components/UI.js';
 import { FavoriteButton } from '../../shared/components/FavoriteButton.js';
 import { LocationPicker } from '../location/LocationPicker.js';
@@ -22,7 +22,6 @@ function getCouponStore(coupon, stores) {
 
 // Presenta únicamente sucursales reales del catálogo para mantener Inicio enfocado.
 export function CustomerNearbyCatalog({ stores = [], coupons = [], categories = [], cities = [], location, onLocationChange, alerts = [], loading, error, onBack, onOpenCoupon, onOpenStore, onViewAllCoupons, title = 'QPONS VIP · McAllen, TX', showAllCoupons = false, isFavoriteCoupon, isFavoriteStore, onToggleCoupon, onToggleStore, favoritesReady = true }) {
-  const [search, setSearch] = React.useState('');
   const [showAllNearby, setShowAllNearby] = React.useState(false);
   const [showAllCouponResults, setShowAllCouponResults] = React.useState(false);
   const [showAllBusinesses, setShowAllBusinesses] = React.useState(false);
@@ -38,16 +37,12 @@ export function CustomerNearbyCatalog({ stores = [], coupons = [], categories = 
     setShowAllNearby(false);
     setShowAllBusinesses(false);
   };
-  const normalizedSearch = search.trim().toLocaleLowerCase('es-MX');
-  const availableStores = stores.filter((store) => `${store.name || ''} ${store.description || ''} ${store.address || ''} ${store.companyId?.name || ''}`.toLocaleLowerCase('es-MX').includes(normalizedSearch));
+  const availableStores = stores;
   const matchingCoupons = coupons.filter((coupon) => {
     const store = getCouponStore(coupon, stores);
-    const storeName = store?.name || coupon.storeId?.name || '';
-    const companyName = store?.companyId?.name || coupon.storeId?.companyId?.name || '';
     const categoryMatches = selectedCategory === 'all' || getStoreCategoryIds(store || {}, categories).includes(selectedCategory);
     const cityMatches = activeCityId === 'all' || store?.cityId?.some((city) => String(city.id) === activeCityId);
-    return `${coupon.name || ''} ${coupon.description || ''} ${coupon.code || ''} ${storeName} ${companyName}`.toLocaleLowerCase('es-MX').includes(normalizedSearch)
-      && (!showAllCoupons || (categoryMatches && cityMatches));
+    return !showAllCoupons || (categoryMatches && cityMatches);
   });
   const filteredStores = availableStores.filter((store) => {
     const categoryMatches = selectedCategory === 'all' || getStoreCategoryIds(store, categories).includes(selectedCategory);
@@ -70,7 +65,6 @@ export function CustomerNearbyCatalog({ stores = [], coupons = [], categories = 
       {loading ? <Text style={{ color: C.muted, fontSize: 12, marginBottom: 10 }}>Cargando negocios...</Text> : null}
       {error ? <Text accessibilityRole="alert" style={{ color: C.pink, fontSize: 12, marginBottom: 10 }}>No se pudo conectar con el catálogo. Revisa que el servidor esté encendido.</Text> : null}
       {!loading && !error ? <Text style={{ color: C.green, fontSize: 12, marginBottom: 12 }}>● {showAllCoupons ? matchingCoupons.length : coupons.length} promociones disponibles</Text> : null}
-      <TextInput value={search} onChangeText={(value) => { setSearch(value); setShowAllNearby(false); setShowAllCouponResults(false); setShowAllBusinesses(false); }} placeholder={showAllCoupons ? '⌕  Buscar cupones o tiendas...' : '⌕  Buscar comercios, productos o experiencias...'} placeholderTextColor={C.muted} accessibilityLabel={showAllCoupons ? 'Buscar cupones o tiendas' : 'Buscar negocios'} returnKeyType="search" style={{ backgroundColor: C.white, borderRadius: 28, paddingHorizontal: 17, paddingVertical: 14, marginBottom: 17, color: C.navy, borderWidth: 1, borderColor: '#EEF0F5' }} />
       {showAllCoupons ? <View style={{ marginBottom: 16 }}>
         <View style={{ flexDirection: 'row', backgroundColor: C.pale, borderRadius: 24, padding: 4, marginBottom: 12 }}>
           {[
@@ -90,7 +84,7 @@ export function CustomerNearbyCatalog({ stores = [], coupons = [], categories = 
         {selectedCategory !== 'all' || activeCityId !== 'all' || onlyWithCoupons ? <Pressable onPress={() => { setSelectedCategory('all'); setSelectedCity('all'); setOnlyWithCoupons(false); if (location?.source === 'city') onLocationChange?.(null); setShowAllCouponResults(false); setShowAllBusinesses(false); }} accessibilityRole="button" style={{ alignSelf: 'flex-start', paddingVertical: 8 }}><Text style={{ color: C.pink, fontSize: 11, fontWeight: '700' }}>Limpiar filtros</Text></Pressable> : null}
       </View> : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, display: showAllCoupons && exploreTab === 'businesses' ? 'none' : 'flex' }}>
-        <Label style={{ fontSize: 21 }}>{showAllCoupons ? (normalizedSearch ? 'Cupones encontrados' : 'Cupones de todas las tiendas') : normalizedSearch ? 'Promociones encontradas' : 'Exclusivas VIP'}</Label>
+        <Label style={{ fontSize: 21 }}>{showAllCoupons ? 'Cupones de todas las tiendas' : 'Exclusivas VIP'}</Label>
         {!showAllCoupons && featuredCoupons.length > 0 ? <Text style={{ color: C.pink, backgroundColor: '#FFE0E5', borderRadius: 12, paddingHorizontal: 9, paddingVertical: 4, fontSize: 10, fontWeight: '700', marginLeft: 8 }}>NUEVOS</Text> : null}
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 6, paddingRight: 8 }} style={{ marginHorizontal: -4, marginBottom: 12, display: showAllCoupons ? 'none' : 'flex' }}>
@@ -123,11 +117,11 @@ export function CustomerNearbyCatalog({ stores = [], coupons = [], categories = 
         })}
       </View> : null}
       {showAllCoupons && exploreTab === 'coupons' && matchingCoupons.length > 5 ? <Pressable onPress={() => setShowAllCouponResults((current) => !current)} accessibilityRole="button" accessibilityLabel={showAllCouponResults ? 'Ver menos cupones' : 'Ver más cupones'} style={{ alignSelf: 'center', paddingHorizontal: 20, paddingVertical: 11, marginTop: -6, marginBottom: 14, borderRadius: 22, backgroundColor: C.white, borderWidth: 1, borderColor: '#E5EAF4' }}><Text style={{ color: C.pink, fontSize: 12, fontWeight: '800' }}>{showAllCouponResults ? 'Ver menos cupones ↑' : 'Ver más cupones →'}</Text></Pressable> : null}
-      {!loading && !error && (showAllCoupons ? exploreTab === 'coupons' && matchingCoupons.length === 0 : featuredCoupons.length === 0) ? <Card><Text style={{ color: C.muted, fontSize: 12 }}>{normalizedSearch ? 'No encontramos promociones con esa búsqueda.' : 'Todavía no hay promociones publicadas.'}</Text></Card> : null}
-      {!showAllCoupons ? <CatalogPromotionalVideos stores={stores} coupons={coupons} search={search} /> : null}
+      {!loading && !error && (showAllCoupons ? exploreTab === 'coupons' && matchingCoupons.length === 0 : featuredCoupons.length === 0) ? <Card><Text style={{ color: C.muted, fontSize: 12 }}>Todavía no hay promociones publicadas.</Text></Card> : null}
+      {!showAllCoupons ? <CatalogPromotionalVideos stores={stores} coupons={coupons} /> : null}
       {(!showAllCoupons || exploreTab === 'businesses') ? <Label style={{ fontSize: 22, marginVertical: 12 }}>{showAllCoupons ? 'Negocios' : 'Negocios cerca de ti'}</Label> : null}
       {(!showAllCoupons || exploreTab === 'businesses') && !loading && !error && businessResults.length === 0 ? (
-        <Card><Text style={{ color: C.muted, fontSize: 12, lineHeight: 18 }}>{normalizedSearch ? 'No encontramos negocios con esa búsqueda. Intenta con otro nombre o palabra.' : selectedCategory !== 'all' || activeCityId !== 'all' || onlyWithCoupons ? 'No hay negocios que coincidan con estos filtros. Prueba otra categoría o ciudad.' : 'Todavía no hay sucursales publicadas. Cuando un negocio registre su ubicación, aparecerá aquí.'}</Text></Card>
+        <Card><Text style={{ color: C.muted, fontSize: 12, lineHeight: 18 }}>{selectedCategory !== 'all' || activeCityId !== 'all' || onlyWithCoupons ? 'No hay negocios que coincidan con estos filtros. Prueba otra categoría o ciudad.' : 'Todavía no hay sucursales publicadas. Cuando un negocio registre su ubicación, aparecerá aquí.'}</Text></Card>
       ) : (!showAllCoupons || exploreTab === 'businesses') ? businessResults.slice(0, showAllCoupons ? (showAllBusinesses ? businessResults.length : 5) : (showAllNearby ? businessResults.length : 5)).map((store) => {
         const coupon = coupons.find((item) => Number(item.storeId?.id ?? item.storeId) === Number(store.id));
         const storeCategoryNames = categories.filter((category) => getStoreCategoryIds(store, categories).includes(String(category.id))).map((category) => category.name).join(', ');
