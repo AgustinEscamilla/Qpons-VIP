@@ -1,0 +1,5 @@
+{
+  "compilerOptions": {},
+  "extends": "expo/tsconfig.base",
+  "exclude": ["backend/**", "dist/**", ".expo/**", "node_modules/**"]
+}
