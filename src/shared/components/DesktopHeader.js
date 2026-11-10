@@ -20,7 +20,10 @@ export function DesktopHeader({ screen, onNavigate, location, cities = [], onLoc
         <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: theme.button, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: theme.buttonText, fontWeight: '900' }}>Q</Text></View>
         <Text style={{ color: theme.ink, fontSize: 14, fontWeight: '900' }}>QPONS <Text style={{ color: theme.accent }}>VIP</Text></Text>
       </Pressable>
-      <LocationPicker location={location} cities={cities} onChange={onLocationChange} desktop palette={palette} />
+      {/* Center the location selector against the full navbar, independent of the side items. */}
+      <View pointerEvents="box-none" style={{ position: 'absolute', left: '50%', marginLeft: -100, width: 200, top: '50%', marginTop: -21, alignItems: 'center', zIndex: 2 }}>
+        <LocationPicker location={location} cities={cities} onChange={onLocationChange} desktop palette={palette} />
+      </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
         {links.map(([label, target], index) => {
           const active = target === 'Inicio' ? screen === 'Inicio' : target === 'Favoritos' ? screen === 'Favoritos' : target === 'Perfil' ? screen === 'Perfil' : screen === target || screen === 'Negocio' || screen === 'DetalleNegocio' || screen === 'Cupón QR' || screen === 'Buscar';
