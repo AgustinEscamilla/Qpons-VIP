@@ -14,6 +14,10 @@ import { databaseEntities } from '../entities/index.js';
 
         return {
           type: 'postgres' as const,
+          // Evita que una conexión caída deje la función serverless esperando varios minutos.
+          connectTimeoutMS: 10_000,
+          retryAttempts: 2,
+          retryDelay: 1_000,
           ...(connectionString
             ? { url: connectionString }
             : {

@@ -18,4 +18,10 @@ async function bootstrap() {
   app.useStaticAssets(resolve(process.cwd(), 'uploads'), { prefix: '/uploads/' });
   await app.listen(Number(process.env.PORT ?? 3000), '0.0.0.0');
 }
-await bootstrap();
+
+bootstrap().catch((error: unknown) => {
+  // El mensaje permite diagnosticar el arranque en Vercel sin imprimir variables secretas.
+  const message = error instanceof Error ? error.message : 'Error desconocido';
+  console.error(`No se pudo iniciar la API: ${message}`);
+  process.exitCode = 1;
+});
