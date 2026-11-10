@@ -21,7 +21,6 @@ export function DesktopHeader({ screen, onNavigate, location, cities = [], onLoc
         <Text style={{ color: theme.ink, fontSize: 14, fontWeight: '900' }}>QPONS <Text style={{ color: theme.accent }}>VIP</Text></Text>
       </Pressable>
       <LocationPicker location={location} cities={cities} onChange={onLocationChange} desktop palette={palette} />
-      <Pressable onPress={() => onNavigate('Buscar')} style={{ minWidth: 170, borderWidth: 1, borderColor: theme.border, borderRadius: 22, paddingHorizontal: 13, paddingVertical: 10 }}><Text style={{ color: theme.muted, fontSize: 12 }}>⌕  Buscar experiencias</Text></Pressable>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
         {links.map(([label, target], index) => {
           const active = target === 'Inicio' ? screen === 'Inicio' : target === 'Favoritos' ? screen === 'Favoritos' : target === 'Perfil' ? screen === 'Perfil' : screen === target || screen === 'Negocio' || screen === 'DetalleNegocio' || screen === 'Cupón QR' || screen === 'Buscar';
