@@ -45,6 +45,7 @@ function App() {
   const [selectedCoupon, setSelectedCoupon] = React.useState(null);
   const [businessSession, setBusinessSession] = React.useState(null);
   const [customerSession, setCustomerSession] = React.useState(null);
+  const [logoutConfirmation, setLogoutConfirmation] = React.useState(null);
   const [authReady, setAuthReady] = React.useState(false);
   const [customerLocation, setCustomerLocation] = React.useState(null);
   const [selectedStore, setSelectedStore] = React.useState(null);
@@ -113,6 +114,15 @@ function App() {
     clearAuthSession().catch(() => {});
     go('Acceso');
   };
+  // Solo se cierra la sesión después de que la persona confirme su decisión.
+  const requestCustomerLogout = () => setLogoutConfirmation('customer');
+  const requestBusinessLogout = () => setLogoutConfirmation('business');
+  const confirmLogout = () => {
+    const accountType = logoutConfirmation;
+    setLogoutConfirmation(null);
+    if (accountType === 'customer') logoutCustomer();
+    if (accountType === 'business') logoutBusiness();
+  };
   const openCustomerDestination = (destination) => {
     if (!authReady) return;
     if (!customerSession) {
@@ -152,7 +162,7 @@ function App() {
       if (!customerSession) return null;
       return <CustomerFavorites coupons={catalog.coupons} stores={catalog.stores} couponIds={favorites.couponIds} storeIds={favorites.storeIds} ready={favorites.ready} loading={catalogLoading} onOpenCoupon={openCoupon} onOpenStore={openStore} onToggleCoupon={favorites.toggleCoupon} onToggleStore={favorites.toggleStore} isFavoriteCoupon={favorites.isFavoriteCoupon} isFavoriteStore={favorites.isFavoriteStore} desktop={isDesktop} />;
     }
-    if (isDesktop && screen === 'Perfil') return customerSession ? <DesktopProfile session={customerSession} coupons={catalog.coupons} stores={catalog.stores} favoriteCouponIds={favorites.couponIds} onSessionChange={updateCustomerSession} onLocationChange={setCustomerLocation} onExplore={() => go('Cupones')} onLogout={logoutCustomer} isFavoriteCoupon={favorites.isFavoriteCoupon} onToggleCoupon={favorites.toggleCoupon} favoritesReady={favorites.ready} /> : null;
+    if (isDesktop && screen === 'Perfil') return customerSession ? <DesktopProfile session={customerSession} coupons={catalog.coupons} stores={catalog.stores} favoriteCouponIds={favorites.couponIds} onSessionChange={updateCustomerSession} onLocationChange={setCustomerLocation} onExplore={() => go('Cupones')} onLogout={requestCustomerLogout} isFavoriteCoupon={favorites.isFavoriteCoupon} onToggleCoupon={favorites.toggleCoupon} favoritesReady={favorites.ready} /> : null;
     if (isDesktop && ['Negocio', 'Cupón QR'].includes(screen)) {
       const relatedStore = selectedStore || catalog.stores.find((store) => Number(store.id) === Number(selectedCoupon?.storeId?.id ?? selectedCoupon?.storeId)) || selectedCoupon?.storeId || null;
       return <DesktopCouponDetail coupon={selectedCoupon} store={relatedStore} coupons={catalog.coupons} isAuthenticated={!!customerSession} onRequireAuth={() => { setMemberGateIntent('coupon'); setMemberGateVisible(true); }} onBack={() => go(screen === 'Cupón QR' ? 'Perfil' : 'Inicio')} onSelectCoupon={(coupon) => { setSelectedCoupon(coupon); setSelectedStore(null); }} isFavoriteCoupon={favorites.isFavoriteCoupon} onToggleCoupon={favorites.toggleCoupon} favoritesReady={favorites.ready} />;
@@ -160,13 +170,13 @@ function App() {
     if (screen === 'Cupón QR') return <CouponQrScreen coupon={selectedCoupon} onBack={() => go('Perfil')} isFavoriteCoupon={favorites.isFavoriteCoupon} onToggleCoupon={favorites.toggleCoupon} favoritesReady={favorites.ready} />;
     if (screen === 'Escanear QR') return <QrScannerScreen coupons={catalog.coupons} onBack={() => go('Inicio')} onOpenCoupon={openCoupon} />;
     if (!isDesktop && screen === 'Perfil') return customerSession
-      ? <CustomerProfileScreen session={customerSession} coupons={catalog.coupons} stores={catalog.stores} favoriteCouponIds={favorites.couponIds} onSessionChange={updateCustomerSession} onLocationChange={setCustomerLocation} onExplore={() => go('Buscar')} onLogout={logoutCustomer} isFavoriteCoupon={favorites.isFavoriteCoupon} onToggleCoupon={favorites.toggleCoupon} favoritesReady={favorites.ready} />
+      ? <CustomerProfileScreen session={customerSession} coupons={catalog.coupons} stores={catalog.stores} favoriteCouponIds={favorites.couponIds} onSessionChange={updateCustomerSession} onLocationChange={setCustomerLocation} onExplore={() => go('Buscar')} onLogout={requestCustomerLogout} isFavoriteCoupon={favorites.isFavoriteCoupon} onToggleCoupon={favorites.toggleCoupon} favoritesReady={favorites.ready} />
       : <CustomerAccessScreen onAuthenticated={(session, accountType) => { if (accountType === 'business') finishBusinessAuthentication(session); else finishCustomerAuthentication(session); }} onRegister={(role) => { setRegistrationRole(role); go('Crear cuenta'); }} />;
     if (screen === 'Recuperar') return <RecoveryForm onBack={() => go('Acceso')} />;
     if (screen === 'Verificar') return pendingRegistration ? <VerificationForm registration={pendingRegistration} onBack={() => go('Crear cuenta')} onVerify={async (code) => { const session = await authApi.verifyRegistration(pendingRegistration.email, code); setPendingRegistration(null); if (session.user.role === 'business') finishBusinessAuthentication(session); else finishCustomerAuthentication(session); }} onResend={async () => { const response = await authApi.resendRegistrationCode(pendingRegistration.email); setPendingRegistration((current) => ({ ...current, developmentCode: response.developmentCode || '' })); return response; }} /> : <CustomerAccessScreen onAuthenticated={(session, accountType) => { if (accountType === 'business') finishBusinessAuthentication(session); else finishCustomerAuthentication(session); }} onRegister={(role) => { setRegistrationRole(role); go('Crear cuenta'); }} />;
     if (screen === 'Crear cuenta') return <RegistrationForm role={registrationRole} onRoleChange={setRegistrationRole} onBack={() => go('Acceso')} onContinue={async (payload) => { const registration = await authApi.register(payload); setPendingRegistration({ ...registration, ...payload }); go('Verificar'); }} />;
     if (screen === 'AccesoNegocio') return <BusinessAccessScreen onBack={() => go('Acceso')} onRegister={() => { setRegistrationRole('business'); go('Crear cuenta'); }} onAuthenticated={finishBusinessAuthentication} />;
-    if (screen === 'PanelNegocio' && businessSession) return <BusinessPanel session={businessSession} onBack={() => go('Acceso')} onLogout={logoutBusiness} />;
+    if (screen === 'PanelNegocio' && businessSession) return <BusinessPanel session={businessSession} onBack={() => go('Acceso')} onLogout={requestBusinessLogout} />;
     if (screen === 'PanelNegocio') return <BusinessAccessScreen onBack={() => go('Inicio')} onRegister={() => { setRegistrationRole('business'); go('Crear cuenta'); }} onAuthenticated={finishBusinessAuthentication} />;
     if (screen === 'Acceso') return <CustomerAccessScreen onAuthenticated={(session, accountType) => { if (accountType === 'business') finishBusinessAuthentication(session); else finishCustomerAuthentication(session); }} onRegister={(role) => { setRegistrationRole(role); go('Crear cuenta'); }} />;
     if (screen === 'Inicio') return <CustomerNearbyCatalog stores={catalog.stores} coupons={catalog.coupons} categories={catalog.categories} cities={catalog.cities} location={activeCustomerLocation} onLocationChange={setCustomerLocation} onViewAllCoupons={() => go('Buscar')} alerts={catalog.alerts} loading={catalogLoading} error={catalogError} onOpenCoupon={openCoupon} onOpenStore={openStore} isFavoriteCoupon={favorites.isFavoriteCoupon} isFavoriteStore={favorites.isFavoriteStore} onToggleCoupon={favorites.toggleCoupon} onToggleStore={favorites.toggleStore} favoritesReady={favorites.ready} />;
@@ -292,6 +302,16 @@ function App() {
         ].map(({ icon, label, target, active }) => <Pressable key={label} onPress={() => ['Perfil', 'Favoritos'].includes(target) ? openCustomerDestination(target) : go(target)} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: active }} style={{ flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'center', paddingVertical: 3 }}><Text style={{ color: active ? C.white : '#D4DCEC', fontSize: 17, lineHeight: 19 }}>{icon}</Text><Text style={{ color: active ? C.white : '#D4DCEC', fontSize: 9, fontWeight: active ? '700' : '600', marginTop: 1 }}>{label}</Text></Pressable>)}
       </View>
     </View>}
+    {logoutConfirmation ? <View accessibilityViewIsModal style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000, elevation: 1000, backgroundColor: 'rgba(16,27,48,0.58)', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <View style={{ width: '100%', maxWidth: 440, backgroundColor: C.white, borderRadius: 24, padding: 24, borderWidth: 1, borderColor: '#E8ECF5', shadowColor: C.navy, shadowOpacity: 0.2, shadowRadius: 20, elevation: 12 }}>
+        <Text style={{ color: C.navy, fontSize: 20, fontWeight: '800' }}>¿Seguro que quieres cerrar sesión?</Text>
+        <Text style={{ color: C.muted, fontSize: 14, lineHeight: 21, marginTop: 10 }}>Puedes volver a iniciar sesión cuando quieras.</Text>
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
+          <Button secondary onPress={() => setLogoutConfirmation(null)} style={{ flex: 1, marginTop: 0, paddingHorizontal: 10 }}>No, continuar</Button>
+          <Button onPress={confirmLogout} style={{ flex: 1, marginTop: 0, paddingHorizontal: 10 }}>Sí, cerrar sesión</Button>
+        </View>
+      </View>
+    </View> : null}
   </SafeAreaView>;
 }
 
