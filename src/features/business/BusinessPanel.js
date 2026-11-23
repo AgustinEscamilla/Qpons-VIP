@@ -367,7 +367,7 @@ export function BusinessPanel({ session, onBack, onLogout }) {
 
   return (
     <View>
-      <Header title={isAdmin ? 'Panel administrativo' : 'Panel de negocios'} back={onBack} />
+      <Header title={isAdmin ? 'Panel administrativo' : 'Panel de negocios'} back={isAdmin ? onBack : onLogout} backLabel={isAdmin ? undefined : 'Cerrar sesión'} />
       <Card style={{ backgroundColor: C.navy }}>
         <Text style={{ color: C.white, fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>QPONS VIP BUSINESS</Text>
         <Text style={{ color: C.white, fontSize: 22, fontWeight: '800', marginTop: 8 }}>Hola, {session.user.name}</Text>
@@ -388,7 +388,6 @@ export function BusinessPanel({ session, onBack, onLogout }) {
       {!loading && !error && activeSection === 'summary' ? <Text style={{ color: C.muted, fontSize: 11, marginBottom: 8 }}>Empieza por el paso pendiente y toca cada fila para abrir esa sección.</Text> : null}
       {renderSection()}
       <Button secondary onPress={loadOverview}>Actualizar información</Button>
-      <Button secondary onPress={onLogout}>Cerrar sesión del negocio</Button>
     </View>
   );
 }
